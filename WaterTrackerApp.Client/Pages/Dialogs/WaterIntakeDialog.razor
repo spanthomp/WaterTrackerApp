@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using WaterTrackerApp.Client
+@using WaterTrackerApp.Client.Dtos
+@using WaterTrackerApp.Client.Layout
+
+<h3>WaterIntake</h3>
+
+<EditForm Model="WaterIntake" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label>Date</label>
+        <InputDate class="form-control" @bind-Value="WaterIntake.IntakeDate" />
+    </div>
+    <div class="mb-3">
+        <label>Consumed Water (ml)</label>
+        <InputNumber class="form-control" @bind-Value="WaterIntake.ConsumedWater" />
+    </div>
+    <button type="submit" class="btn btn-primary me-2">@ButtonText</button>
+    <button type="button" class="btn btn-secondary" @onclick="OnCancel">Cancel</button>
+</EditForm>
+
+@code {
+    [Parameter] public WaterIntakeDto WaterIntake { get; set; } = new();
+    [Parameter] public EventCallback<WaterIntakeDto> OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public string ButtonText { get; set; } = "Save";
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmit.InvokeAsync(WaterIntake);
+    }
+}

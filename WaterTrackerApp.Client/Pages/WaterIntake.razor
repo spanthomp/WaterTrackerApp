@@ -1,0 +1,75 @@
+﻿@page "/waterintake/{UserId:int}"
+@using WaterTrackerApp.Client
+@using WaterTrackerApp.Client.Dtos
+@using WaterTrackerApp.Client.Layout
+@using WaterTrackerApp.Client.Pages.Dialogs
+@inject Services.WaterIntakeService WaterIntakeService
+@inject NavigationManager NavManager
+
+<h3>Water Intake Records for @FullName</h3>
+
+@if (!string.IsNullOrEmpty(notification))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @notification
+        <button type="button" class="btn-close" @onclick="() => notification = null"></button>
+    </div>
+}
+
+<button class="btn btn-primary mb-3" @onclick="ShowCreateDialog">Add Water Intake</button>
+
+@if (records == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (records.Count == 0)
+{
+    <p>No records found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Consumed Water (ml)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in records)
+            {
+                <tr>
+                    <td>@record.Id</td>
+                    <td>@record.IntakeDate.ToShortDateString()</td>
+                    <td>@record.ConsumedWater</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => ShowEditDialog(record)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteRecord(record.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showDialog)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((editingRecord.Id == 0) ? "Add Water Intake" : "Edit Water Intake")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                </div>
+                <div class="modal-body">
+                    <WaterIntakeDialog WaterIntake="editingRecord"
+                                       OnValidSubmit="SaveRecord"
+                                       OnCancel="CloseDialog"
+                                       ButtonText="Save" />
+                </div>
+            </div>
+        </div>
+    </div>
+}

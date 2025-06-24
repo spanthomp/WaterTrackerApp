@@ -1,0 +1,77 @@
+﻿@page "/users"
+@using WaterTrackerApp.Client
+@using WaterTrackerApp.Client.Pages.Dialogs
+@using WaterTrackerApp.Client.Dtos
+@using WaterTrackerApp.Client.Layout
+@inject Services.UserService UserService
+
+<h3>Users</h3>
+
+@if (!string.IsNullOrEmpty(notification))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @notification
+        <button type="button" class="btn-close" @onclick="() => notification = null"></button>
+    </div>
+}
+
+<button class="btn btn-primary mb-3" @onclick="ShowCreateDialog">Add User</button>
+
+@if (users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (users.Count == 0)
+{
+    <p>No users found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>First Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.Surname</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <a class="btn btn-sm btn-info me-1" href="@($"/waterintake/{user.Id}")">Water Intake</a>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => ShowEditDialog(user)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteUser(user.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showDialog)
+{
+    <div class="modal show d-block" tabindex="-1" style="background:rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@((editingUser.Id == 0) ? "Add User" : "Edit User")</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDialog"></button>
+                </div>
+                <div class="modal-body">
+                    <UserDialog User="editingUser"
+                                OnValidSubmit="SaveUser"
+                                OnCancel="CloseDialog"
+                                ButtonText="Save" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
