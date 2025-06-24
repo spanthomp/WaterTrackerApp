@@ -1,1 +1,2 @@
-# PracticeCleanArchitecture
+# WaterTrackerApp
+Everflow test.
