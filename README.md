@@ -18,4 +18,10 @@ Blazor WebAssembly application with a .NET 8 REST API backend for tracking and m
   - View water consumption history per user
 
 ### Startup projects
-- API > Client
+- API > Client  
+
+### Apply migrations and update the database, run:
+- dotnet ef database update --project WaterTrackerApp.Infrastructure
+
+  **Note:**  
+> Make sure your default project is `WaterTrackerApp.Infrastructure` when running EF Core commands.
