@@ -17,6 +17,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterTrackerApp.Infrastructure", "WaterTrackerApp.Infrastructure\WaterTrackerApp.Infrastructure.csproj", "{9D5DB982-B048-4062-3F2D-7F86D871B1C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterTrackerApp.Tests", "WaterTrackerApp.Tests\WaterTrackerApp.Tests.csproj", "{29F2D9CC-994E-0A95-F328-E32090EB869C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9D5DB982-B048-4062-3F2D-7F86D871B1C3} = {9D5DB982-B048-4062-3F2D-7F86D871B1C3}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,9 +1,10 @@
 ﻿    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using WaterTrackerApp.Application.Dtos;
-    using WaterTrackerApp.Application.Interfaces;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using WaterTrackerApp.Application.Dtos;
+    using WaterTrackerApp.Application.Interfaces;
+using WaterTrackerApp.Application.Services;
 
     namespace WaterTrackerApp.API.Controllers
     {
@@ -15,22 +16,24 @@
         public class WaterIntakeController : ControllerBase
         {
             private readonly IWaterIntakeService _waterIntakeService;
+            private readonly WaterConsumptionCalculator _calculator;
 
-            /// <summary>
-            /// Initializes a new instance of the "WaterIntakeController" class.
-            /// </summary>
-            /// <param name="waterIntakeService">Service for water intake operations.</param>
-            public WaterIntakeController(IWaterIntakeService waterIntakeService)
+        /// <summary>
+        /// Initializes a new instance of the "WaterIntakeController" class.
+        /// </summary>
+        /// <param name="waterIntakeService">Service for water intake operations.</param>
+        public WaterIntakeController(IWaterIntakeService waterIntakeService)
             {
                 _waterIntakeService = waterIntakeService;
-            }
+                _calculator = new WaterConsumptionCalculator(waterIntakeService);
+        }
 
-            /// <summary>
-            /// Gets all water intake records for a specific user.
-            /// </summary>
-            /// <param name="userId">The user's unique identifier.</param>
-            /// <returns>A list of water intake records for the user.</returns>
-            [HttpGet("user/{userId}")]
+        /// <summary>
+        /// Gets all water intake records for a specific user.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <returns>A list of water intake records for the user.</returns>
+        [HttpGet("user/{userId}")]
             public async Task<ActionResult<IEnumerable<WaterIntakeDto>>> GetByUserId(int userId)
             {
                 var records = await _waterIntakeService.GetByUserIdAsync(userId);
@@ -88,5 +91,17 @@
                 if (!success) return NotFound();
                 return NoContent();
             }
-        }
+
+        /// <summary>
+        /// Gets the total amount of water consumed by a user.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <returns>The total water consumed by the user.</returns>
+        [HttpGet("user/{userId}/total")]
+            public async Task<ActionResult<int>> GetTotalConsumed(int userId)
+            {
+                var total = await _calculator.GetTotalConsumed(userId);
+                return Ok(total);
+            }
     }
+}

@@ -14,8 +14,9 @@ namespace WaterTrackerApp.Client.Pages
         private List<WaterIntakeDto>? WaterIntake;
         public string FirstName { get; set; } = string.Empty;
         public string? Surname { get; set; }
-
         public string UserName => string.IsNullOrWhiteSpace(Surname) ? FirstName : $"{FirstName} {Surname}";
+
+        public int TotalWaterConsumed;
 
         //table
         private bool _loading;
@@ -29,6 +30,8 @@ namespace WaterTrackerApp.Client.Pages
                 FirstName = user.FirstName;
                 Surname = user.Surname;
             }
+
+            TotalWaterConsumed = await WaterIntakeService.GetTotalConsumedAsync(UserId);
             WaterIntake = await WaterIntakeService.GetByUserIdAsync(UserId); 
             _loading = false;
         }
