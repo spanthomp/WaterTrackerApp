@@ -20,8 +20,7 @@ Blazor WebAssembly application with a .NET 8 REST API backend for tracking and m
 ### Startup projects
 - API > Client  
 
-### Apply migrations and update the database, run:
+### Apply migrations and update the database (default project: WaterTrackerApp.Infrastructure), then run:
 - dotnet ef database update --project WaterTrackerApp.Infrastructure
 
-  **Note:**  
-> Make sure your default project is `WaterTrackerApp.Infrastructure` when running EF Core commands.
+###Future Improvements:
