@@ -1,0 +1,41 @@
+﻿@page "/waterintake/{UserId:int}"
+@inject IDialogService DialogService
+@inject MudBlazor.ISnackbar Snackbar
+
+<PageTitle>Water Management</PageTitle>
+
+@if (_loading)
+{
+    <div class="d-flex justify-center align-center">
+        <MudProgressCircular Color="Color.Tertiary" Size="Size.Medium" Indeterminate="true" />
+    </div>
+}
+else
+{
+    <MudTable Items="@WaterIntake" Dense="true" Striped="true" Breakpoint="Breakpoint.Sm">
+        <ToolBarContent>
+            <div class="d-flex justify-space-between align-center w-100">
+                <MudText Typo="Typo.h6">Water Consumption for @UserName</MudText>
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" @onclick="ShowCreateDialog">Add water intake</MudButton>
+            </div>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Id</MudTh>
+            <MudTh>Intake Date</MudTh>
+            <MudTh>Consumed Water (ml)</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Id">@context.Id</MudTd>
+            <MudTd DataLabel="Intake Date">@context.IntakeDate.ToShortDateString()</MudTd>
+            <MudTd DataLabel="Consumed Water">@context.ConsumedWater</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Default" aria-label="edit" Size="Size.Small" OnClick="@(() => ShowEditDialog(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Default" aria-label="delete" Size="Size.Small" OnClick="@(() => DeleteRecord(context.Id))" />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+}

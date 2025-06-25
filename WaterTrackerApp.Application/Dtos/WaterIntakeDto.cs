@@ -14,7 +14,7 @@ namespace WaterTrackerApp.Application.Dtos
         [Required]
         public int UserId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Intake date is required")]
         public DateTime IntakeDate { get; set; }
 
         [Range(0, int.MaxValue, ErrorMessage = "Consumed water must be a positive amount.")]

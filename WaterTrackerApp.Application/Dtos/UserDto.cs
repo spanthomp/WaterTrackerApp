@@ -11,13 +11,13 @@ namespace WaterTrackerApp.Application.Dtos
     {
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "First name is required")]
         public string FirstName { get; set; } = string.Empty;
 
         public string Surname { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
         public string Email { get; set; } = string.Empty;
     }
 }
