@@ -15,7 +15,7 @@ Blazor WebAssembly application with a .NET 8 REST API backend for tracking and m
 - dotnet ef database update --project WaterTrackerApp.Infrastructure
 
 ### Future Improvements:
-- Implement refit to simplify and reduce boilerplate and make for easier testing
- - More input validation and error handling 
+ - Implement refit to simplify and reduce boilerplate and make for easier testing
+ - More validatation - input sanitation, email uniqueness, regex, etc
  - UI/UX - Make more responsive and accessible
  - For data changes such as TotalConsumed - could have used SignalR or shared service to keep synced and updated and reduce redundant api calls
