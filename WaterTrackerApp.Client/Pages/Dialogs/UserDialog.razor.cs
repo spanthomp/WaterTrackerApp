@@ -27,11 +27,6 @@ namespace WaterTrackerApp.Client.Pages.Dialogs
         }
         private void Cancel() => MudDialog.Cancel();
 
-        //private void OnValidated(bool valid)
-        //{
-        //    formIsValid = valid;
-        //    StateHasChanged();
-        //}
         private async Task HandleValidSubmit()
         {
             await OnValidSubmit.InvokeAsync(User);
