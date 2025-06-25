@@ -12,12 +12,10 @@
 }
 else
 {
-    <p>TotalWater: </p> @TotalWaterConsumed 
-
     <MudTable Items="@WaterIntake" Dense="true" Striped="true" Breakpoint="Breakpoint.Sm">
         <ToolBarContent>
             <div class="d-flex justify-space-between align-center w-100">
-                <MudText Typo="Typo.h6">Water Consumption for @UserName</MudText>
+                <MudText Typo="Typo.h6">Water Intakes for user @UserName</MudText>
                 <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary" @onclick="ShowCreateDialog">Add water intake</MudButton>
             </div>
         </ToolBarContent>
@@ -40,4 +38,15 @@ else
             <MudTablePager />
         </PagerContent>
     </MudTable>
+
+    <div class="d-flex justify-center mt-4">
+        <MudCard Elevation="4" Class="pa-4 w-100 mx-4">
+            <div class="d-flex justify-between align-center w-100">
+                <div class="d-flex align-center">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalDrink" Size="Size.Medium" Color="Color.Info" Class="me-2" />
+                    <MudText Typo="Typo.body1">@UserName has consumed <b>@TotalWaterConsumed</b>ml of water in total</MudText>
+                </div>
+            </div>
+        </MudCard>
+    </div>
 }

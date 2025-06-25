@@ -10,15 +10,12 @@ namespace WaterTrackerApp.Client.Pages
     {
         [Inject] private WaterIntakeService WaterIntakeService { get; set; } = default!;
         [Inject] private UserService UserService { get; set; } = default!;
+
         [Parameter] public int UserId { get; set; }
+
         private List<WaterIntakeDto>? WaterIntake;
-        public string FirstName { get; set; } = string.Empty;
-        public string? Surname { get; set; }
-        public string UserName => string.IsNullOrWhiteSpace(Surname) ? FirstName : $"{FirstName} {Surname}";
-
-        public int TotalWaterConsumed;
-
-        //table
+        private string UserName = string.Empty;
+        private int TotalWaterConsumed;
         private bool _loading;
 
         protected override async Task OnInitializedAsync()
@@ -27,80 +24,84 @@ namespace WaterTrackerApp.Client.Pages
             var user = await UserService.GetUserByIdAsync(UserId);
             if (user != null)
             {
-                FirstName = user.FirstName;
-                Surname = user.Surname;
+                UserName = string.IsNullOrWhiteSpace(user.Surname) ? user.FirstName : $"{user.FirstName} {user.Surname}";
             }
 
-            TotalWaterConsumed = await WaterIntakeService.GetTotalConsumedAsync(UserId);
-            WaterIntake = await WaterIntakeService.GetByUserIdAsync(UserId); 
+            WaterIntake = await WaterIntakeService.GetByUserIdAsync(UserId);
+            await RefreshTotal();
+
             _loading = false;
         }
+        private async Task RefreshTotal()
+        {
+            TotalWaterConsumed = await WaterIntakeService.GetTotalConsumedAsync(UserId);
+            StateHasChanged();
+        }
+
+        private async Task<WaterIntakeDto?> ShowWaterDialog(string title, WaterIntakeDto intake, string buttonText)
+        {
+            var parameters = new DialogParameters<Dialogs.WaterIntakeDialog>
+            {
+                { x => x.WaterIntake, intake },
+                { x => x.ButtonText, buttonText }
+            };
+
+            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+            var dialog = await DialogService.ShowAsync<Dialogs.WaterIntakeDialog>(title, parameters, options);
+            var result = await dialog.Result;
+
+            return !result.Canceled && result.Data is WaterIntakeDto dto ? dto : null;
+        }
+
         private async Task ShowCreateDialog()
         {
-            var parameters = new DialogParameters<Dialogs.WaterIntakeDialog>
-            {
-                { x => x.WaterIntake, new WaterIntakeDto { UserId = UserId, IntakeDate = DateTime.Today } },
-                { x => x.ButtonText, "Save" }
-            };
+            var dto = await ShowWaterDialog("Add Water Intake", new WaterIntakeDto { UserId = UserId, IntakeDate = DateTime.Today }, "Save");
+            if (dto == null) return;
 
-            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-            var dialog = await DialogService.ShowAsync<Dialogs.WaterIntakeDialog>("Add Water Intake", parameters, options);
-            var result = await dialog.Result;
-
-            if (!result.Canceled && result.Data is WaterIntakeDto created)
+            var newRecord = await WaterIntakeService.CreateAsync(dto);
+            if (newRecord != null && newRecord.Id != 0)
             {
-                var newRecord = await WaterIntakeService.CreateAsync(created);
-                if (newRecord != null && newRecord.Id != 0)
-                {
-                    WaterIntake?.Add(newRecord);
-                    Snackbar.Add("Water intake record created successfully!", Severity.Success);
-                    StateHasChanged();
-                }
-                else
-                {
-                    Snackbar.Add("Failed to create water intake record.", Severity.Error);
-                }
+                WaterIntake?.Add(newRecord);
+                await RefreshTotal();
+                Snackbar.Add("Water intake record created successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to create water intake record.", Severity.Error);
             }
         }
+
         private async Task ShowEditDialog(WaterIntakeDto record)
         {
-            var parameters = new DialogParameters<Dialogs.WaterIntakeDialog>
+            var dto = await ShowWaterDialog("Edit Water Intake", new WaterIntakeDto
             {
-                { x => x.WaterIntake, new WaterIntakeDto
-                    {
-                        Id = record.Id,
-                        UserId = record.UserId,
-                        IntakeDate = record.IntakeDate,
-                        ConsumedWater = record.ConsumedWater
-                    }
-                },
-                { x => x.ButtonText, "Save" }
-            };
+                Id = record.Id,
+                UserId = record.UserId,
+                IntakeDate = record.IntakeDate,
+                ConsumedWater = record.ConsumedWater
+            }, "Save");
 
-            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-            var dialog = await DialogService.ShowAsync<Dialogs.WaterIntakeDialog>("Edit Water Intake", parameters, options);
-            var result = await dialog.Result;
+            if (dto == null) return;
 
-            if (!result.Canceled && result.Data is WaterIntakeDto updated)
+            var success = await WaterIntakeService.UpdateAsync(dto.Id, dto);
+            if (success)
             {
-                var success = await WaterIntakeService.UpdateAsync(updated.Id, updated);
-                if (success)
+                var existing = WaterIntake?.FirstOrDefault(r => r.Id == dto.Id);
+                if (existing != null)
                 {
-                    var existing = WaterIntake?.FirstOrDefault(r => r.Id == updated.Id);
-                    if (existing != null)
-                    {
-                        existing.IntakeDate = updated.IntakeDate;
-                        existing.ConsumedWater = updated.ConsumedWater;
-                        Snackbar.Add("Water intake record updated successfully!", Severity.Success);
-                        StateHasChanged();
-                    }
+                    existing.IntakeDate = dto.IntakeDate;
+                    existing.ConsumedWater = dto.ConsumedWater;
                 }
-                else
-                {
-                    Snackbar.Add("Failed to update water intake record.", Severity.Error);
-                }
+
+                await RefreshTotal();
+                Snackbar.Add("Water intake record updated successfully!", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update water intake record.", Severity.Error);
             }
         }
+
         private async Task DeleteRecord(int id)
         {
             bool? confirmed = await DialogService.ShowMessageBox(
@@ -114,8 +115,8 @@ namespace WaterTrackerApp.Client.Pages
                 if (success)
                 {
                     WaterIntake = WaterIntake?.Where(r => r.Id != id).ToList();
+                    await RefreshTotal();
                     Snackbar.Add("Water intake record deleted successfully!", Severity.Success);
-                    StateHasChanged();
                 }
             }
         }

@@ -6,14 +6,14 @@
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" Model="WaterIntake" OnValidSubmit="HandleValidSubmit">
-            <MudText Typo="Typo.subtitle2" Class="mb-1">Intake Date</MudText>
+            <MudText Typo="Typo.caption" Class="mb-1">Intake Date</MudText>
             <InputDate class="form-control" @bind-Value="WaterIntake.IntakeDate" />
             <MudNumericField @bind-Value="WaterIntake.ConsumedWater" Label="Consumed Water (ml)" For="@(() => WaterIntake.ConsumedWater)"
                              Min="0" Required="true" />
         </MudForm>
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Secondary" OnClick="Submit">@ButtonText</MudButton>
+        <MudButton Color="Color.Secondary" Variant="Variant.Filled" OnClick="Submit">@ButtonText</MudButton>
         <MudButton Color="Color.Default" OnClick="Cancel">Cancel</MudButton>
     </DialogActions>
 </MudDialog>

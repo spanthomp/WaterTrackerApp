@@ -13,8 +13,6 @@ namespace WaterTrackerApp.Client.Pages
         [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
         private List<UserDto>? Users;
-
-        //table
         private bool _loading;
 
         protected override async Task OnInitializedAsync()
@@ -28,74 +26,71 @@ namespace WaterTrackerApp.Client.Pages
         {
             NavigationManager.NavigateTo($"/waterintake/{userId}");
         }
-        private async Task ShowCreateDialog()
+        private async Task<UserDto?> ShowUserDialog(string title, UserDto user, string buttonText)
         {
-            var parameters = new DialogParameters<Dialogs.UserDialog>
+            var parameters = new DialogParameters<UserDialog>
             {
-                { x => x.User, new UserDto() },
-                { x => x.ButtonText, "Save" }
+                { x => x.User, user },
+                { x => x.ButtonText, buttonText }
             };
 
             var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-            var dialog = await DialogService.ShowAsync<Dialogs.UserDialog>("Add User", parameters, options);
+            var dialog = await DialogService.ShowAsync<UserDialog>(title, parameters, options);
             var result = await dialog.Result;
 
-            if (!result.Canceled && result.Data is UserDto created)
+            return !result.Canceled && result.Data is UserDto dto ? dto : null;
+        }
+
+        private async Task ShowCreateDialog()
+        {
+            var newUser = await ShowUserDialog("Add User", new UserDto(), "Save");
+            if (newUser == null) return;
+
+            var createdUser = await UserService.CreateUserAsync(newUser);
+            if (createdUser != null && createdUser.Id != 0)
             {
-                var newUser = await UserService.CreateUserAsync(created);
-                if (newUser != null && newUser.Id != 0)
-                {
-                    Users?.Add(newUser);
-                    Snackbar.Add("User created successfully!", Severity.Success);
-                    StateHasChanged();
-                }
-                else
-                {
-                    Snackbar.Add("Failed to create user.", Severity.Error);
-                }
+                Users?.Add(createdUser);
+                Snackbar.Add("User created successfully!", Severity.Success);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add("Failed to create user.", Severity.Error);
             }
         }
 
         private async Task ShowEditDialog(UserDto user)
         {
-            var parameters = new DialogParameters<Dialogs.UserDialog>
+            var updatedUser = await ShowUserDialog("Edit User", new UserDto
             {
-                { x => x.User, new UserDto
-                    {
-                        Id = user.Id,
-                        FirstName = user.FirstName,
-                        Surname = user.Surname,
-                        Email = user.Email
-                    }
-                },
-                { x => x.ButtonText, "Save" }
-            };
+                Id = user.Id,
+                FirstName = user.FirstName,
+                Surname = user.Surname,
+                Email = user.Email
+            }, "Save");
 
-            var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
-            var dialog = await DialogService.ShowAsync<Dialogs.UserDialog>("Edit User", parameters, options);
-            var result = await dialog.Result;
+            if (updatedUser == null) return;
 
-            if (!result.Canceled && result.Data is UserDto updated)
+            var success = await UserService.UpdateUserAsync(updatedUser.Id, updatedUser);
+            if (success)
             {
-                var success = await UserService.UpdateUserAsync(updated.Id, updated);
-                if (success)
+                var existing = Users?.FirstOrDefault(u => u.Id == updatedUser.Id);
+                if (existing != null)
                 {
-                    var existing = Users?.FirstOrDefault(u => u.Id == updated.Id);
-                    if (existing != null)
-                    {
-                        existing.FirstName = updated.FirstName;
-                        existing.Surname = updated.Surname;
-                        existing.Email = updated.Email;
-                        Snackbar.Add("User updated successfully!", Severity.Success);
-                        StateHasChanged();
-                    }
+                    existing.FirstName = updatedUser.FirstName;
+                    existing.Surname = updatedUser.Surname;
+                    existing.Email = updatedUser.Email;
                 }
-                else
-                {
-                    Snackbar.Add("Failed to update user.", Severity.Error);
-                }
+
+                Snackbar.Add("User updated successfully!", Severity.Success);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add("Failed to update user.", Severity.Error);
             }
         }
+
         private async Task DeleteUser(int id)
         {
             bool? confirmed = await DialogService.ShowMessageBox(
